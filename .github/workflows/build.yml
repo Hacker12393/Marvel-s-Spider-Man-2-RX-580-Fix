@@ -1,1 +1,52 @@
+name: Build D3D12 Proxy
 
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build D3D12 proxy
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          New-Item -ItemType Directory -Force -Path "build" | Out-Null
+
+          ml64.exe /nologo /c `
+            /Fo "build\D3D12ProxyStubs.obj" `
+            "src\D3D12ProxyStubs.asm"
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          cl.exe /nologo /EHsc /std:c++17 /LD `
+            "src\SpiderD3D12Proxy.cpp" `
+            "build\D3D12ProxyStubs.obj" `
+            /Fe:"build\d3d12.dll" `
+            /Fo:"build\D3D12Proxy.obj" `
+            /link /DEF:"src\d3d12_proxy.def"
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Upload compiled DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: d3d12-proxy
+          path: build/d3d12.dll
