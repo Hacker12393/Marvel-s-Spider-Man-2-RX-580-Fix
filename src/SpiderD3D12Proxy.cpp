@@ -99,8 +99,7 @@ static bool IsGpuCompatibilityWarningW(LPCWSTR text) {
 
 extern "C" int WINAPI HookedMessageBoxA(HWND hwnd, LPCSTR text, LPCSTR caption, UINT type) {
     if (IsGpuCompatibilityWarningA(text)) {
-        Log("Aviso de GPU incompatível suprimido (MessageBoxA)");
-        return IDOK;
+        Log("GPU compatibility warning detected - NOT suppressed");
     }
 
     return g_originalMessageBoxA ?
@@ -110,8 +109,7 @@ extern "C" int WINAPI HookedMessageBoxA(HWND hwnd, LPCSTR text, LPCSTR caption, 
 
 extern "C" int WINAPI HookedMessageBoxW(HWND hwnd, LPCWSTR text, LPCWSTR caption, UINT type) {
     if (IsGpuCompatibilityWarningW(text)) {
-        Log("Aviso de GPU incompatível suprimido (MessageBoxW)");
-        return IDOK;
+        Log("GPU compatibility warning detected - NOT suppressed");
     }
 
     return g_originalMessageBoxW ?
